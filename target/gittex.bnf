@@ -1,0 +1,35 @@
+DOCB ::= '\BEGIN'
+DOCE ::= '\END'
+TITLEB ::= '\TITLE['
+BRACKETE ::= ']'
+HEADING ::= '#'
+PARAB ::= '\PARAB'
+PARAE ::= '\PARAE'
+BOLD ::= '*'
+LISTITEM ::= '+'
+NEWLINE ::= '\\'
+LINKB ::= '['
+ADDRESSB ::= '('
+ADDRESSE ::= ')'
+IMAGEB ::= '!['
+DEFB ::= '\DEF['
+EQSIGN ::= '='
+USEB ::= '\USE[' REQ
+TEXT ::= Any plain text
+TEXT ::= Any plain text | ε
+
+<gittex> ::= DOCB
+<variable-define> <title> <body> DOCE
+<title> ::= TITLEB REQTEXT BRACKETE
+<body> ::= <inner-text> <body> | <paragraph> <body> | <newline> <body> | ε
+<paragraph> ::=PARAB <variable-define> <inner-text> PARAE
+<inner-text> ::= <variable-use> <inner-text> | <heading> <inner-text> | <bold> <inner-text> | <listitem> <inner-text> | <image> <inner-text> | <link> <inner-text> | TEXT <inner-text> | ε
+<heading> ::= HEADING REQTEXT | ε
+<variable-define> ::= DEFB REQTEXT EQSIGN REQTEXT BRACKETE <variable-define> | ε
+<variable-use> ::= USEB REQTEXT BRACKETE | ε
+<bold> ::= BOLD TEXT BOLD | ε
+<listitem> ::=LISTITEMB <inner-item> <list-item> | ε
+<inner-item> ::= <variable-use> <inner-item> | <bold> <inner-item> | <link> <inner-item> | REQTEXT <inner-item> | ε
+<link> ::= LINKB REQTEXT BRACKETE ADDRESSB REQTEXT ADDRESSE | ε
+<image> ::= IMAGEB REQTEXT BRACKETE ADDRESSB REQTEXT ADDRESSE | ε
+<newline> ::= NEWLINE | ε
