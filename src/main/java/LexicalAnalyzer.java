@@ -4,6 +4,14 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class LexicalAnalyzer {
+
+    private String sourceLine;
+    private char[] lexeme = new char [100];
+    private char nextChar;
+    private int lexLength;
+    private int position;
+    private List<String> lexems = new ArrayList<String>();
+
     //taken from simplecompiler...will need to update
     public void start(String line){
 
@@ -20,6 +28,7 @@ public class LexicalAnalyzer {
         lexLength = 0;
 
         // Ignore spaces and add the first character to the token
+        //^ are we doing that here?? check/confirm
         getNonBlank();
         addChar();
         getChar();
