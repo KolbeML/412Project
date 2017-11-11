@@ -1,6 +1,5 @@
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Queue
 
 import LexicalAnalyzer.LexicalAnalyzer
 
@@ -39,6 +38,7 @@ class Lexer extends LexicalAnalyzer
     }
   }
 
+  //check what the char is and call appropriate method
   def addLexC() : Unit =
   {
     nextC match
@@ -46,12 +46,12 @@ class Lexer extends LexicalAnalyzer
       case '[' => findEndBracket()
       case '*' => idStar()
       case '+' => getList()
-      case '\\' => idSlash()
+      case '\\' => idBSlash()
       case '(' => getAddr()
       case '!' => getImg()
       case '#' => getHead()
       case ']' => lexeme += nextC
-      case _ => println("Error: encountered unknown lexem: " + nextC + " ")
+      case _ => println("Lexical Error in line " + Compiler.lineCount + ": what is this: " + nextC + " ")
     }
   }
 
@@ -59,7 +59,7 @@ class Lexer extends LexicalAnalyzer
   {
     nextC = tempC
     pos = tempP
-    lexeme += nextC // only add one \
+    lexeme += nextC
     while(!isLast(nextC) && !nextC.toString.equalsIgnoreCase("]"))
     {
       getChar()
@@ -72,6 +72,7 @@ class Lexer extends LexicalAnalyzer
     }
   }
 
+  //Self explanatory :P
   def addNewline() : Unit =
   {
     lexeme += nextC
@@ -79,6 +80,7 @@ class Lexer extends LexicalAnalyzer
     lookUp(lexeme.mkString)
   }
 
+  //For when we need a closing bracket
   def findEndBracket() : Unit =
   {
     lexeme += nextC
@@ -91,10 +93,11 @@ class Lexer extends LexicalAnalyzer
     if (isLast(nextC) && !nextC.toString.equals(CONSTANTS.BRACKETE))
     {
       setError()
-      println("Line: " + Compiler.lineCount + " Syntax error: Missing closing bracket.")
+      println("Syntax Error in line " + Compiler.lineCount + "Missing closing bracket.")
     }
   }
 
+  //For when we find a web address
   def getAddr() : Unit =
   {
     lexeme += nextC
@@ -107,7 +110,7 @@ class Lexer extends LexicalAnalyzer
     if (isLast(nextC) && !nextC.toString.equals(CONSTANTS.BRACKETE))
     {
       setError()
-      println("Line: " + Compiler.lineCount + " Syntax error: Missing closing parentheses")
+      println("Lexical Error in line " + Compiler.lineCount + ": Missing closing parentheses")
     }
   }
 
@@ -118,7 +121,7 @@ class Lexer extends LexicalAnalyzer
     {
       nextC = sourceLn.charAt(pos)
       if (Compiler.debugMode)
-        println("Next char is: " + nextC)
+        println("Next character: " + nextC)
       pos += 1
     }
 
@@ -127,17 +130,19 @@ class Lexer extends LexicalAnalyzer
     return nextC
   }
 
+  //gets headings, defined by # symbol
   def getHead() : Unit =
   {
-    lexeme += nextC // add '#'
+    lexeme += nextC
 
-    while (!isLast(nextC)) // headings on their own line
+    while (!isLast(nextC))
     {
       getChar()
       addChar()
     }
   }
 
+  //For when we've found an image, marked by !
   def  getImg() : Unit =
   {
     lexeme += nextC
@@ -168,7 +173,7 @@ class Lexer extends LexicalAnalyzer
     {
       if(isLex(nextC))
       {
-        addLexC() // addChar will handle finding valid lexemes in tokens.
+        addLexC()
         setCurrentT(lexeme.mkString)
         if(!isLex(nextC))
           getChar()
@@ -176,7 +181,6 @@ class Lexer extends LexicalAnalyzer
 
       else if(isValid(nextC.toString))
       {
-        // all supported characters...   The only allowed plain text in our language is: A-Z, a-z, 0-9, commas, period, quotes, colons, question marks, underscores and forward slashes.
         while(!isLast(nextC) && !foundT )
         {
           if(isSpace(nextC)) {
@@ -212,7 +216,8 @@ class Lexer extends LexicalAnalyzer
     }
   }
 
-  def idSlash() : Unit =
+  //called when we find double backslashes (\\)
+  def idBSlash() : Unit =
   {
     tempP = pos
     tempC = nextC
@@ -225,6 +230,7 @@ class Lexer extends LexicalAnalyzer
       addLexType()
   }
 
+  //Called when we pull up an asterisk (*)
   def idStar() : Unit =
   {
     var tempPos : Int = pos
@@ -246,7 +252,7 @@ class Lexer extends LexicalAnalyzer
 
         else
         {
-          tempPos = pos // repeat to find bold closing
+          tempPos = pos
           tempChar = nextC
           getChar()
 
@@ -259,7 +265,7 @@ class Lexer extends LexicalAnalyzer
 
           else
           {
-            println("Line : " + Compiler.lineCount + " Lexical Error: Unclosed Asterisk. Expected a second asterisk.)")
+            println("Lexical Error in line " + Compiler.lineCount + ": Unmatched asterisk - needs its partner!)")
           }
         }
       }
@@ -286,12 +292,13 @@ class Lexer extends LexicalAnalyzer
 
       if(!foundTrailing)
       {
-        println("Line : " + Compiler.lineCount + " Lexical Error: Unclosed Asterisk. Expected a second asterisk.)")
+        println("Lexical Error in line " + Compiler.lineCount + ": Missing second asterisk)")
         setError()
       }
     }
   }
 
+  //just initializes the lexemes
   def initializeLex() : Unit =
   {
     lexemes = CONSTANTS.validLexemes
@@ -335,10 +342,11 @@ class Lexer extends LexicalAnalyzer
     }
   }
 
+  //is given string in a lexeme?
   def lookUp(t : String) : Boolean =
   {
     if (Compiler.debugMode)
-      println("Candidate Token: " + t)
+      println("Token: " + t)
 
     if (lexemes.contains(t))
       true
@@ -346,7 +354,7 @@ class Lexer extends LexicalAnalyzer
     else if(isText)
     {
       if (Compiler.debugMode)
-        println("isText: Valid Token: " + t + " found.")
+        println("Text. " + t + " is a good token.")
       isText = false
       return true
     }
@@ -354,7 +362,7 @@ class Lexer extends LexicalAnalyzer
     else
     {
       Compiler.Parser.setError()
-      println("Line " + Compiler.lineCount + ": LEXICAL ERROR - " + t + " is not recognized.")
+      println("Line " + Compiler.lineCount + ": Lexical error: what is " + t + " ?")
       setError()
       lexeme.clear()
       return false
