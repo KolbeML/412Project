@@ -5,6 +5,6 @@ package LexicalAnalyzer
 trait LexicalAnalyzer {
   def addChar() : Unit
   def getChar() : Char
-  def getToken() : Unit
+  def getNextToken() : Unit
   def lookUp() : Boolean
 }
